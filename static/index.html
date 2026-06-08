@@ -301,10 +301,61 @@
             50% { opacity: 0.5; }
         }
 
+        /* ─── Header Actions ────────────────────────────────────── */
         .header-actions {
             margin-left: auto;
             display: flex;
             gap: 8px;
+            align-items: center;
+        }
+
+        .ingest-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 12px;
+            padding-right: 12px;
+            border-right: 1px solid var(--border);
+        }
+
+        .ingest-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-ingest {
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-ingest:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-ingest:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-clear {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--error);
+            background: transparent;
+            color: var(--error);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            opacity: 0.8;
+        }
+        
+        .btn-clear:hover {
+            background: rgba(201, 107, 107, 0.1);
+            opacity: 1;
         }
 
         .header-btn {
@@ -574,8 +625,11 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <div class="ingest-status" id="ingest-status-area">
+                        <!-- Ingest UI injected here -->
+                        <span class="ingest-text">Checking docs...</span>
+                    </div>
                     <button class="header-btn" id="btn-new-chat">New Chat</button>
-                    <button class="header-btn" id="btn-health">Health</button>
                 </div>
             </div>
 
@@ -616,7 +670,7 @@
         const statusDot = document.getElementById('status-dot');
         const statusText = document.getElementById('status-text');
         const btnNewChat = document.getElementById('btn-new-chat');
-        const btnHealth = document.getElementById('btn-health');
+        const ingestStatusArea = document.getElementById('ingest-status-area');
         const quickActions = document.querySelectorAll('.quick-action');
 
         const API_BASE = window.location.origin;
@@ -656,6 +710,76 @@
                 statusDot.className = 'status-dot offline';
                 statusText.textContent = 'Cannot reach server';
             }
+        }
+
+        // ─── Ingestion Management ────────────────────────────────────
+        let ingestedDocs = [];
+
+        async function checkIngestionStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/ingest/documents`);
+                if (res.ok) {
+                    ingestedDocs = await res.json();
+                    renderIngestionUI();
+                }
+            } catch (e) {
+                console.error("Failed to check docs:", e);
+            }
+        }
+
+        function renderIngestionUI() {
+            if (ingestedDocs.length > 0) {
+                const totalChunks = ingestedDocs.reduce((sum, d) => sum + d.chunk_count, 0);
+                ingestStatusArea.innerHTML = `
+                    <span class="ingest-text" title="${ingestedDocs.length} docs, ${totalChunks} chunks">📚 ${ingestedDocs.length} docs ready</span>
+                    <button class="btn-clear" id="btn-clear-docs" title="Clear all documents">✕</button>
+                `;
+                document.getElementById('btn-clear-docs').addEventListener('click', clearDocuments);
+            } else {
+                ingestStatusArea.innerHTML = `
+                    <button class="btn-ingest" id="btn-do-ingest">Ingest PDFs</button>
+                `;
+                document.getElementById('btn-do-ingest').addEventListener('click', runIngestion);
+            }
+        }
+
+        async function runIngestion() {
+            ingestStatusArea.innerHTML = `<span class="ingest-text">⏳ Processing PDFs...</span>`;
+            addMessage("Started ingesting PDFs from the Database folder. This may take a few minutes...", 'ai');
+            
+            try {
+                const res = await fetch(`${API_BASE}/ingest/local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (res.ok) {
+                    addMessage("✅ Ingestion complete! The AI is now ready to answer questions about the AUTOSAR specs.", 'ai');
+                } else {
+                    const error = await res.json();
+                    addMessage(`⚠️ Ingestion failed: ${error.detail || 'Unknown error'}`, 'ai');
+                }
+            } catch (err) {
+                addMessage(`⚠️ Failed to trigger ingestion: ${err.message}`, 'ai');
+            }
+            await checkIngestionStatus();
+        }
+
+        async function clearDocuments() {
+            if (!confirm(`Are you sure you want to delete all ${ingestedDocs.length} documents? You'll need to ingest them again.`)) return;
+            
+            ingestStatusArea.innerHTML = `<span class="ingest-text">⏳ Deleting...</span>`;
+            
+            try {
+                for (const doc of ingestedDocs) {
+                    await fetch(`${API_BASE}/ingest/documents/${doc.document_name}`, { method: 'DELETE' });
+                }
+                addMessage("🗑️ All documents and embeddings have been deleted.", 'ai');
+            } catch (err) {
+                addMessage(`⚠️ Error during deletion: ${err.message}`, 'ai');
+            }
+            await checkIngestionStatus();
         }
 
         // ─── Send Message ──────────────────────────────────────────
@@ -811,19 +935,12 @@
 
         // Header buttons
         btnNewChat.addEventListener('click', switchToWelcome);
-        btnHealth.addEventListener('click', async () => {
-            try {
-                const res = await fetch(`${API_BASE}/health`);
-                const data = await res.json();
-                addMessage(`Health Status: ${JSON.stringify(data, null, 2)}`, 'ai');
-            } catch {
-                addMessage('⚠️ Could not reach the health endpoint', 'ai');
-            }
-        });
 
         // ─── Init ──────────────────────────────────────────────────
         checkHealth();
+        checkIngestionStatus();
         setInterval(checkHealth, 30000);
+        setInterval(checkIngestionStatus, 30000);
     </script>
 </body>
 </html>
