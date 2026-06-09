@@ -7,10 +7,9 @@
 | # | Name | BITS ID | Email |
 |---|------|---------|-------|
 | 1 | Abhinav Mandloi | 2025aa05473 | 2025aa05473@wilp.bits-pilani.ac.in |
-| 2 | Prajwal Rastogi | 2025aa05564 | 2025aa05564@wilp.bits-pilani.ac.in |
-| 3 | Pritish Joshi | 2025aa05686 | 2025aa05686@wilp.bits-pilani.ac.in |
-| 4 | Satwinder Singh | 2025aa05553 | 2025aa05553@wilp.bits-pilani.ac.in |
-| 5 | Shray Vijay | 2025aa05533 | 2025aa05533@wilp.bits-pilani.ac.in |
+| 2 | Pritish Joshi | 2025aa05686 | 2025aa05686@wilp.bits-pilani.ac.in |
+| 3 | Satwinder Singh | 2025aa05553 | 2025aa05553@wilp.bits-pilani.ac.in |
+| 4 | Shray Vijay | 2025aa05533 | 2025aa05533@wilp.bits-pilani.ac.in |
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
