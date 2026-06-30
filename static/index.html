@@ -772,17 +772,17 @@
                     const failures = results.filter(r => !r.status || !r.status.startsWith('success'));
                     if (failures.length > 0) {
                         const failedDocs = failures.map(f => `${f.document}: ${f.status}`).join('\n');
-                        addMessage(`⚠️ Ingestion completed with ${failures.length} issue(s).\n${failedDocs}`, 'ai');
+                        addMessage(`Ingestion completed with ${failures.length} issue(s).\n${failedDocs}`, 'ai');
                     } else {
                         const totalChunks = results.reduce((sum, r) => sum + r.chunks_created, 0);
                         addMessage(`✅ Ingestion complete. Indexed ${results.length} document(s) and ${totalChunks} chunk(s).`, 'ai');
                     }
                 } else {
                     const error = await res.json();
-                    addMessage(`⚠️ Ingestion failed: ${formatApiError(error)}`, 'ai');
+                    addMessage(`Ingestion failed: ${formatApiError(error)}`, 'ai');
                 }
             } catch (err) {
-                addMessage(`⚠️ Failed to trigger ingestion: ${err.message}`, 'ai');
+                addMessage(`Failed to trigger ingestion: ${err.message}`, 'ai');
             }
             await checkIngestionStatus();
         }
@@ -798,7 +798,7 @@
                 }
                 addMessage("🗑️ All documents and embeddings have been deleted.", 'ai');
             } catch (err) {
-                addMessage(`⚠️ Error during deletion: ${err.message}`, 'ai');
+                addMessage(`Error during deletion: ${err.message}`, 'ai');
             }
             await checkIngestionStatus();
         }
@@ -846,10 +846,10 @@
                 if (res.ok) {
                     addAIMessage(data);
                 } else {
-                    addMessage(`⚠️ ${formatApiError(data)}`, 'ai');
+                    addMessage(formatApiError(data), 'ai');
                 }
             } catch (err) {
-                addMessage(`⚠️ Could not reach the server. Make sure it's running on ${API_BASE}\n\nError: ${err.message}`, 'ai');
+                addMessage(`Could not reach the server. Make sure it's running on ${API_BASE}\n\nError: ${err.message}`, 'ai');
             } finally {
                 typingIndicator.classList.remove('visible');
                 isProcessing = false;

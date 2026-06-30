@@ -41,3 +41,6 @@ class TestChatUiRegressions:
         assert "function formatValidationError(item)" in HTML
         assert "Please ask a question with at least" in HTML
         assert "body.question:" not in HTML
+
+    def test_chat_errors_do_not_use_warning_icon(self):
+        assert "⚠️" not in HTML
