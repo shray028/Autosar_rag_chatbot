@@ -35,5 +35,9 @@ class TestChatUiRegressions:
     def test_api_errors_are_formatted_before_display(self):
         assert "function formatApiError(payload)" in HTML
         assert "Array.isArray(detail)" in HTML
-        assert "JSON.stringify(detail)" in HTML
         assert "formatApiError(data)" in HTML
+
+    def test_validation_errors_are_chatbot_friendly(self):
+        assert "function formatValidationError(item)" in HTML
+        assert "Please ask a question with at least" in HTML
+        assert "body.question:" not in HTML

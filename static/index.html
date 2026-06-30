@@ -934,10 +934,7 @@
             if (typeof detail === 'string') return detail;
 
             if (Array.isArray(detail)) {
-                return detail.map(item => {
-                    const location = Array.isArray(item.loc) ? item.loc.join('.') : item.loc;
-                    return `${location ? `${location}: ` : ''}${item.msg || JSON.stringify(item)}`;
-                }).join('\n');
+                return detail.map(formatValidationError).join('\n');
             }
 
             if (detail && typeof detail === 'object') {
@@ -949,6 +946,31 @@
             }
 
             return 'Request failed. Please try again.';
+        }
+
+        function formatValidationError(item) {
+            const field = Array.isArray(item.loc) ? item.loc[item.loc.length - 1] : item.loc;
+            const minLength = item.ctx?.min_length;
+            const maxLength = item.ctx?.max_length;
+
+            if (field === 'question') {
+                if (item.type === 'string_too_short' || minLength) {
+                    return `Please ask a question with at least ${minLength || 3} characters so I can search the AUTOSAR documents.`;
+                }
+                if (item.type === 'string_too_long' || maxLength) {
+                    return `Please shorten your question to ${maxLength || 2000} characters or less so I can process it reliably.`;
+                }
+                if (item.type?.startsWith('missing')) {
+                    return 'Please type a question before sending.';
+                }
+                return 'Please rephrase your question and send it again.';
+            }
+
+            if (field === 'top_k') {
+                return 'Please choose between 1 and 20 source chunks for retrieval.';
+            }
+
+            return item.msg || 'Please check your request and try again.';
         }
 
         function scrollToBottom() {
