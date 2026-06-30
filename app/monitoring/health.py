@@ -212,7 +212,36 @@ def start_heartbeat() -> asyncio.Task:
     return asyncio.create_task(heartbeat_loop())
 
 
+def _current_overall_status() -> ServiceStatus:
+    """Return the aggregate status from the latest completed health checks."""
+    statuses = [h.status for h in _service_health.values()]
+    if all(s == ServiceStatus.HEALTHY for s in statuses):
+        return ServiceStatus.HEALTHY
+    return ServiceStatus.DEGRADED
+
+
 # ─── API Endpoints ───────────────────────────────────────────────────────
+
+@router.get("/health/status")
+async def health_status():
+    """
+    Return cached health status without live dependency calls.
+
+    The chat UI polls this endpoint so the page stays responsive even when
+    Ollama is cold, downloading a model, or temporarily unavailable. Fresh
+    dependency checks still happen in the heartbeat task and the full /health
+    endpoint.
+    """
+    uptime = time.time() - _start_time
+
+    return {
+        "status": _current_overall_status().value,
+        "uptime_seconds": round(uptime, 1),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "services": {name: health.to_dict() for name, health in _service_health.items()},
+        "cached": True,
+    }
+
 
 @router.get("/health")
 async def health_check():
@@ -231,21 +260,14 @@ async def health_check():
     )
 
     # Determine overall status
-    statuses = [h.status for h in _service_health.values()]
-    if all(s == ServiceStatus.HEALTHY for s in statuses):
-        overall = ServiceStatus.HEALTHY
-    elif any(s == ServiceStatus.UNAVAILABLE for s in statuses):
-        overall = ServiceStatus.DEGRADED
-    else:
-        overall = ServiceStatus.DEGRADED
-
     uptime = time.time() - _start_time
 
     return {
-        "status": overall.value,
+        "status": _current_overall_status().value,
         "uptime_seconds": round(uptime, 1),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "services": {name: health.to_dict() for name, health in _service_health.items()},
+        "cached": False,
     }
 
 

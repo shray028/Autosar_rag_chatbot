@@ -72,6 +72,18 @@ class SearchOnlyResponse(BaseModel):
     latency_ms: float
 
 
+def api_error(code: str, message: str, action: str, technical_detail: str = "") -> dict:
+    """Build a consistent client-facing API error payload."""
+    payload = {
+        "code": code,
+        "message": message,
+        "action": action,
+    }
+    if technical_detail:
+        payload["technical_detail"] = technical_detail
+    return payload
+
+
 # ─── API Endpoints ───────────────────────────────────────────────────────
 
 @router.post("", response_model=QueryResponse)
@@ -100,14 +112,30 @@ async def query_documents(request: QueryRequest):
         logger.info("query_started", question=request.question[:100])
 
         try:
+            retrieval_top_k = (
+                request.top_k
+                if request.skip_reranking
+                else max(request.top_k, settings.TOP_K_RETRIEVAL)
+            )
             search_results = await semantic_search(
                 query=request.question,
-                top_k=settings.TOP_K_RETRIEVAL,
+                top_k=retrieval_top_k,
                 document_filter=request.document_filter,
             )
         except Exception as e:
             logger.error("search_failed", error=str(e))
-            raise HTTPException(status_code=503, detail=f"Search failed: {e}")
+            raise HTTPException(
+                status_code=503,
+                detail=api_error(
+                    code="SEARCH_UNAVAILABLE",
+                    message="Unable to search the ingested AUTOSAR documents.",
+                    action=(
+                        "Check that Ollama is running, the embedding model is installed, "
+                        "and the vector database is available."
+                    ),
+                    technical_detail=str(e),
+                ),
+            )
 
         if not search_results:
             return QueryResponse(
@@ -177,7 +205,18 @@ async def query_documents(request: QueryRequest):
             logger.error("llm_generation_failed", error=str(e))
             raise HTTPException(
                 status_code=503,
-                detail=f"LLM generation failed: {e}. Check Ollama status at /health",
+                detail=api_error(
+                    code="LLM_UNAVAILABLE",
+                    message=(
+                        "Relevant document chunks were found, but the local LLM could "
+                        "not generate an answer."
+                    ),
+                    action=(
+                        "Check that Ollama is running and that the configured LLM model "
+                        f"({settings.LLM_MODEL}) is installed. See /health for details."
+                    ),
+                    technical_detail=str(e),
+                ),
             )
 
         # Step 6: Citation extraction

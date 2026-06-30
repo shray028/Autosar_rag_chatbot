@@ -294,6 +294,7 @@
             animation: pulse 2s infinite;
         }
 
+        .status-dot.warning { background: var(--warning); }
         .status-dot.offline { background: var(--error); animation: none; }
 
         @keyframes pulse {
@@ -693,15 +694,14 @@
         // ─── Health Check ──────────────────────────────────────────
         async function checkHealth() {
             try {
-                const res = await fetch(`${API_BASE}/health`);
+                const res = await fetch(`${API_BASE}/health/status`);
                 const data = await res.json();
                 if (data.status === 'healthy') {
                     statusDot.className = 'status-dot';
                     statusText.textContent = 'Online · All services healthy';
                 } else if (data.status === 'degraded') {
-                    statusDot.className = 'status-dot';
-                    statusDot.style.background = 'var(--warning)';
-                    statusText.textContent = 'Degraded · Some services unavailable';
+                    statusDot.className = 'status-dot warning';
+                    statusText.textContent = getHealthStatusText(data);
                 } else {
                     statusDot.className = 'status-dot offline';
                     statusText.textContent = 'Offline · Check Ollama';
@@ -710,6 +710,19 @@
                 statusDot.className = 'status-dot offline';
                 statusText.textContent = 'Cannot reach server';
             }
+        }
+
+        function getHealthStatusText(data) {
+            const services = data.services || {};
+            const unchecked = Object.values(services).every(s => !s.last_check);
+            if (unchecked) return 'Online · Checking dependencies';
+
+            const unavailable = Object.entries(services)
+                .filter(([, service]) => service.status !== 'healthy')
+                .map(([name]) => name.replaceAll('_', ' '));
+
+            if (unavailable.length === 0) return 'Online · All services healthy';
+            return `Degraded · Check ${unavailable.slice(0, 2).join(', ')}`;
         }
 
         // ─── Ingestion Management ────────────────────────────────────
@@ -755,10 +768,18 @@
                 });
                 
                 if (res.ok) {
-                    addMessage("✅ Ingestion complete! The AI is now ready to answer questions about the AUTOSAR specs.", 'ai');
+                    const results = await res.json();
+                    const failures = results.filter(r => !r.status || !r.status.startsWith('success'));
+                    if (failures.length > 0) {
+                        const failedDocs = failures.map(f => `${f.document}: ${f.status}`).join('\n');
+                        addMessage(`⚠️ Ingestion completed with ${failures.length} issue(s).\n${failedDocs}`, 'ai');
+                    } else {
+                        const totalChunks = results.reduce((sum, r) => sum + r.chunks_created, 0);
+                        addMessage(`✅ Ingestion complete. Indexed ${results.length} document(s) and ${totalChunks} chunk(s).`, 'ai');
+                    }
                 } else {
                     const error = await res.json();
-                    addMessage(`⚠️ Ingestion failed: ${error.detail || 'Unknown error'}`, 'ai');
+                    addMessage(`⚠️ Ingestion failed: ${formatApiError(error)}`, 'ai');
                 }
             } catch (err) {
                 addMessage(`⚠️ Failed to trigger ingestion: ${err.message}`, 'ai');
@@ -773,7 +794,7 @@
             
             try {
                 for (const doc of ingestedDocs) {
-                    await fetch(`${API_BASE}/ingest/documents/${doc.document_name}`, { method: 'DELETE' });
+                    await fetch(`${API_BASE}/ingest/documents/${encodeURIComponent(doc.document_name)}`, { method: 'DELETE' });
                 }
                 addMessage("🗑️ All documents and embeddings have been deleted.", 'ai');
             } catch (err) {
@@ -788,6 +809,9 @@
         async function sendMessage(text) {
             if (!text.trim() || isProcessing) return;
             isProcessing = true;
+            const submittedText = text.trim();
+            welcomeInput.value = '';
+            chatInput.value = '';
 
             // Transition to chat screen if on welcome
             if (!chatScreen.classList.contains('active')) {
@@ -796,7 +820,7 @@
             }
 
             // Add user message
-            addMessage(text, 'user');
+            addMessage(submittedText, 'user');
 
             // Show typing indicator
             typingIndicator.classList.add('visible');
@@ -811,9 +835,9 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        question: text,
+                        question: submittedText,
                         top_k: 5,
-                        skip_reranking: false,
+                        skip_reranking: true,
                     }),
                 });
 
@@ -822,7 +846,7 @@
                 if (res.ok) {
                     addAIMessage(data);
                 } else {
-                    addMessage(`⚠️ Error: ${data.detail || 'Query failed'}`, 'ai');
+                    addMessage(`⚠️ ${formatApiError(data)}`, 'ai');
                 }
             } catch (err) {
                 addMessage(`⚠️ Could not reach the server. Make sure it's running on ${API_BASE}\n\nError: ${err.message}`, 'ai');
@@ -831,7 +855,6 @@
                 isProcessing = false;
                 welcomeSend.disabled = false;
                 chatSend.disabled = false;
-                chatInput.value = '';
                 chatInput.focus();
                 scrollToBottom();
             }
@@ -841,13 +864,14 @@
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `message ${type}`;
+            const safeText = escapeHtml(text).replace(/\n/g, '<br>');
 
             const avatar = type === 'user' ? '👤' : '🤖';
             const initial = type === 'user' ? 'U' : '';
 
             div.innerHTML = `
                 <div class="msg-avatar">${type === 'ai' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text-primary)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>' : 'You'}</div>
-                <div class="msg-content"><p>${escapeHtml(text)}</p></div>
+                <div class="msg-content"><p>${safeText}</p></div>
             `;
 
             chatMessages.insertBefore(div, typingIndicator);
@@ -901,8 +925,30 @@
         // ─── Utilities ─────────────────────────────────────────────
         function escapeHtml(text) {
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = String(text ?? '');
             return div.innerHTML;
+        }
+
+        function formatApiError(payload) {
+            const detail = payload?.detail ?? payload;
+            if (typeof detail === 'string') return detail;
+
+            if (Array.isArray(detail)) {
+                return detail.map(item => {
+                    const location = Array.isArray(item.loc) ? item.loc.join('.') : item.loc;
+                    return `${location ? `${location}: ` : ''}${item.msg || JSON.stringify(item)}`;
+                }).join('\n');
+            }
+
+            if (detail && typeof detail === 'object') {
+                const parts = [];
+                if (detail.message) parts.push(detail.message);
+                if (detail.action) parts.push(`Action: ${detail.action}`);
+                if (!parts.length && detail.error) parts.push(detail.error);
+                return parts.length ? parts.join('\n') : JSON.stringify(detail);
+            }
+
+            return 'Request failed. Please try again.';
         }
 
         function scrollToBottom() {
