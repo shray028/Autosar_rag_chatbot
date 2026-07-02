@@ -6,92 +6,82 @@
 
 ## Data Preparation View Diagram
 
-```mermaid
-flowchart TB
-    subgraph "RAW DATA SOURCES"
-        PDF1["📄 AUTOSAR_CP_SWS_CANDriver.pdf<br/>(CAN Driver Specification)"]
-        PDF2["📄 AUTOSAR_CP_TPS_SystemTemplate.pdf<br/>(System Template)"]
-        PDF3["📄 AUTOSAR_EXP_LayeredSoftwareArchitecture.pdf<br/>(Layered Architecture)"]
-        PDF4["📄 AUTOSAR_EXP_SecurityOverview.pdf<br/>(Security Overview)"]
-        PDF5["📄 AUTOSAR_SWS_EthernetDriver.pdf<br/>(Ethernet Driver Spec)"]
-    end
-
-    subgraph "STAGE 1: DOCUMENT PARSING"
-        direction LR
-        P1["Extract Text<br/>(PyMuPDF/fitz)"]
-        P2["Identify Headings<br/>(regex: ^\\d+\\.\\d+)"]
-        P3["Extract Tables<br/>(tab detection)"]
-        P4["Detect SWS IDs<br/>([SWS_*_\\d+])"]
-        P5["Page Metadata<br/>(page_num, chars)"]
-    end
-
-    subgraph "STAGE 2: SEMANTIC CHUNKING"
-        direction LR
-        C1["Split by Section<br/>Headings"]
-        C2["Token-Bounded<br/>Splitting<br/>(max 512 tokens)"]
-        C3["Overlap<br/>Generation<br/>(50 token overlap)"]
-        C4["Sentence Boundary<br/>Alignment"]
-    end
-
-    subgraph "STAGE 3: FEATURE ENGINEERING"
-        direction LR
-        E1["Text → Embedding<br/>(nomic-embed-text)<br/>768-dim vectors"]
-        E2["Batch Processing<br/>(50 texts/batch)"]
-        E3["Retry + Backoff<br/>(3 attempts)"]
-    end
-
-    subgraph "STAGE 4: METADATA ENRICHMENT"
-        direction LR
-        M1["document_name"]
-        M2["page_number"]
-        M3["section heading"]
-        M4["chunk_index"]
-        M5["requirement_ids"]
-        M6["token_count"]
-    end
-
-    subgraph "STAGE 5: INDEXING & STORAGE"
-        VS["ChromaDB<br/>(Persistent Vector Store)<br/>Cosine Similarity Index (HNSW)"]
-        MS["Metadata Store<br/>(JSON files)<br/>Document registry"]
-    end
-
-    PDF1 --> P1
-    PDF2 --> P1
-    PDF3 --> P1
-    PDF4 --> P1
-    PDF5 --> P1
-
-    P1 --> P2
-    P2 --> P3
-    P3 --> P4
-    P4 --> P5
-    P5 --> C1
-
-    C1 --> C2
-    C2 --> C3
-    C3 --> C4
-    C4 --> E1
-
-    E1 --> E2
-    E2 --> E3
-    E3 --> M1
-
-    M1 --> VS
-    M2 --> VS
-    M3 --> VS
-    M4 --> VS
-    M5 --> VS
-    M6 --> VS
-
-    P5 --> MS
-
-    style VS fill:#fff3e0
-    style MS fill:#e3f2fd
 ```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                                  │
+│   ████████████████████████████████████                                                                           │
+│   █  Data Preparation View           █                                                                           │
+│   ████████████████████████████████████                                                                           │
+│                                                                                                                  │
+│                                                                                                                  │
+│  ┌──────────────────────────────────┐                                                  ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐   │
+│  │ AUTOSAR Document Chunk           │                                ...               │  CHUNK_SIZE = 512   │   │
+│  │ (Entity)                         │                                 │    ...         │  CHUNK_OVERLAP = 50 │   │
+│  │──────────────────────────────────│          ┌──────────┐   ┌───────┴──┐  │          │  WHERE token_count>0│   │
+│  │ - chunk_id  (PK)                 │ outputs  │  PDF     │   │ Semantic │  │          └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘   │
+│  │ - document_name                  │◄╌╌╌╌╌╌╌╌╌│ Parsing  │──►│ Chunking │──┤               (Note)               │
+│  │ - page_number                    │          │(Operator)│   │(Operator)│  │                                    │
+│  │ - page_end                       │          └────┬─────┘   └──────────┘  │                                    │
+│  │ - section_heading                │               │                       │                                    │
+│  │ - chunk_text                     │               ▲                       ▼                                    │
+│  │ - requirement_ids                │               │             ┌──────────────┐     ┌──────────────┐          │
+│  │ - token_count                    │               │             │  Embedding   │────►│  Metadata    │          │
+│  │ - embedding_vector (768-dim)     │           Data flow         │  Generation  │     │  Enrichment  │          │
+│  │   ...                            │         (solid arrows)      │  (Operator)  │     │  (Operator)  │          │
+│  │ - confidence_score               │                             └──────────────┘     └──────┬───────┘          │
+│  │                                  │                                                         │                  │
+│  │ Label: embedding_vector is the   │                                                         ▼                  │
+│  │ computed feature for similarity  │                                                ┌──────────────┐            │
+│  │ search                           │                                                │   Indexing   │            │
+│  └──────────────────────────────────┘                                                │   & Storage  │            │
+│                                                                                      │  (Operator)  │            │
+│                                                                                      └──────────────┘            │
+│                                                                                                                  │
+│  ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐  │
+│  │                                  Data Flow (Pipeline)                                                      │  │
+│  │                                                                                                            │  │
+│  │  📄 AUTOSAR PDFs ──► [PDF Parsing] ──► [Semantic Chunking] ──► [Embedding] ──► [Metadata] ──► [Indexing]   │  │
+│  │       (raw)           (extract)         (split)                (vectorize)     (enrich)      (ChromaDB)    │  │
+│  │                                                                                                            │  │
+│  └────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Legend for Data Preparation View
+
+| Symbol | Element | Description |
+|--------|---------|-------------|
+| Rectangle with header + attributes | **Entity** | A data entity with its schema (attributes), PK in bold |
+| Rectangle (in pipeline) | **Operator** | A data transformation step in the preparation pipeline |
+| Solid arrow `──►` | **Data flow** | Direction of data movement between operators |
+| Dashed arrow `◄╌╌╌` | **Inputs/output** | Entity provides input to or receives output from operators |
+| Rectangle with folded corner | **Note** | Additional details like parameters, SQL conditions, or constraints |
+| `─── Relationship ───` | **Relationship** | Association between entities |
 
 ---
 
-## Raw Data Characterization
+## Entity: AUTOSAR Document Chunk
+
+The primary data entity produced by the preparation pipeline.
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| **chunk_id** *(PK)* | string | Unique identifier for each chunk |
+| document_name | string | Source PDF filename (e.g., `AUTOSAR_CP_SWS_CANDriver.pdf`) |
+| page_number | int | Starting page number in the source PDF |
+| page_end | int | Ending page number (for multi-page chunks) |
+| section_heading | string | Detected AUTOSAR section heading (e.g., "7.1.2 Com_Init") |
+| chunk_text | string | The actual text content of the chunk |
+| chunk_index | int | Sequential position of chunk within the document |
+| total_chunks | int | Total number of chunks from this document |
+| requirement_ids | list[string] | Extracted AUTOSAR requirement IDs (e.g., `[SWS_Com_00432]`) |
+| token_count | int | Estimated token count (characters / 4) |
+| **embedding_vector** *(768-dim)* | float[] | Dense vector representation — the **computed feature** for similarity search |
+
+---
+
+## Raw Data Sources
 
 | Document | Size | Pages | Content Type |
 |----------|------|-------|-------------|
@@ -105,11 +95,15 @@ flowchart TB
 
 ---
 
-## Data Preparation Pipeline
+## Operators (Data Preparation Pipeline)
 
-### Stage 1: Document Parsing
+### Operator 1: PDF Parsing
 
-**Tool:** PyMuPDF (fitz) — high-performance PDF text extraction
+| Attribute | Value |
+|-----------|-------|
+| **Tool** | PyMuPDF (fitz) — high-performance PDF text extraction |
+| **Input** | Raw AUTOSAR PDF files |
+| **Output** | `ParsedDocument` with list of `ParsedPage` objects |
 
 **Extraction targets:**
 - **Full text:** All visible text content per page
@@ -118,17 +112,23 @@ flowchart TB
 - **Table detection:** Heuristic based on tab-separated lines (>10% of lines have ≥2 tabs)
 - **Page metadata:** Page number, character count, heading list
 
-**Output:** `ParsedDocument` with list of `ParsedPage` objects
-
 **Code reference:** [parser.py](../app/services/ingestion/parser.py)
 
-### Stage 2: Semantic Chunking
+### Operator 2: Semantic Chunking
 
-**Strategy:** Two-level semantic splitting
+| Attribute | Value |
+|-----------|-------|
+| **Strategy** | Two-level semantic splitting |
+| **Input** | `ParsedDocument` |
+| **Output** | List of `Chunk` objects with text + metadata |
+
+> **Note:** `CHUNK_SIZE = 512 tokens`, `CHUNK_OVERLAP = 50 tokens`
+
+**Splitting strategy:**
 
 1. **Primary split:** By AUTOSAR section headings
    - Each numbered section (e.g., "7.1.2 Com_Init") becomes a logical boundary
-   - This preserves the document's inherent semantic structure
+   - Preserves the document's inherent semantic structure
 
 2. **Secondary split:** By token count
    - Sections exceeding `CHUNK_SIZE` (default: 512 tokens) are further split
@@ -141,16 +141,15 @@ flowchart TB
 - Overlap ensures no information is lost at chunk boundaries
 - Requirement IDs ([SWS_*]) are preserved within their containing chunk
 
-**Output:** List of `Chunk` objects with text + metadata
-
 **Code reference:** [chunker.py](../app/services/ingestion/chunker.py)
 
-### Stage 3: Feature Engineering (Embedding)
+### Operator 3: Embedding Generation
 
-**Model:** `nomic-embed-text` via Ollama
-- **Architecture:** Transformer-based text encoder
-- **Output:** 768-dimensional dense vectors
-- **Similarity space:** Cosine similarity (higher = more similar)
+| Attribute | Value |
+|-----------|-------|
+| **Model** | `nomic-embed-text` via Ollama |
+| **Input** | List of chunk text strings |
+| **Output** | 768-dimensional dense vectors per chunk |
 
 **Processing:**
 - Texts are embedded in batches of 50 for efficiency
@@ -166,7 +165,12 @@ flowchart TB
 
 **Code reference:** [embedder.py](../app/services/ingestion/embedder.py)
 
-### Stage 4: Metadata Enrichment
+### Operator 4: Metadata Enrichment
+
+| Attribute | Value |
+|-----------|-------|
+| **Input** | Chunks with embeddings |
+| **Output** | Enriched chunks with full metadata |
 
 Each chunk is enriched with metadata for citation generation:
 
@@ -181,7 +185,12 @@ Each chunk is enriched with metadata for citation generation:
 | `requirement_ids` | SWS regex matches | Enable requirement-level queries |
 | `token_count` | Character/4 estimate | Monitor chunk size distribution |
 
-### Stage 5: Indexing & Storage
+### Operator 5: Indexing & Storage
+
+| Attribute | Value |
+|-----------|-------|
+| **Input** | Enriched chunks with embeddings and metadata |
+| **Output** | Persistent vector store + metadata registry |
 
 **Vector Store (ChromaDB):**
 - **Index type:** HNSW (Hierarchical Navigable Small World) — approximate nearest neighbor
@@ -200,7 +209,7 @@ Each chunk is enriched with metadata for citation generation:
 ## Data Quality Considerations
 
 | Concern | Mitigation |
-|---------|-----------|
+|---------|------------|
 | **PDF extraction errors** | PyMuPDF handles most layouts; tables may lose structure — mitigated by including raw text |
 | **Chunk boundary artifacts** | 50-token overlap ensures context continuity at boundaries |
 | **Duplicate content** | Jaccard similarity check (>0.7) during context assembly removes near-duplicate chunks |
