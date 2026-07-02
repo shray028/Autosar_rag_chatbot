@@ -37,7 +37,7 @@ Build a **Retrieval-Augmented Generation (RAG)** system that:
 | **Is it a prediction task?** | ✅ Yes | Semantic search is fundamentally a relevance scoring/prediction problem — the embedding model predicts similarity between a query and document chunks |
 | **Is the data too complex for rules?** | ✅ Yes | Natural language understanding of technical documents cannot be solved with keyword matching or regex alone — it requires learned representations |
 | **Is there sufficient data?** | ✅ Yes | AUTOSAR specifications provide 10,000+ pages of structured technical content |
-| **Is there a feedback loop?** | ✅ Yes | User thumbs-up/down ratings enable continuous improvement of retrieval quality |
+| **Is there a feedback loop?** | ✅ Yes | User thumbs-up/down ratings enable quality monitoring and identification of low-confidence retrieval areas |
 | **Is ML the right investment?** | ✅ Yes | The alternative (manual search) costs 15-30 min/query × hundreds of queries/month = significant engineering time saved |
 
 ### Why Not Traditional Search?

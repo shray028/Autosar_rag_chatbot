@@ -104,7 +104,7 @@ The top-level business goal decomposes via **AND** into:
 | **+output** | Citation-backed answer with document name, page number, section heading |
 | **+usageFrequency** | Per query (on-demand, per instance) |
 | **+updateFrequency** | On new document ingestion (when new AUTOSAR specs are added) |
-| **+learningPeriod** | Continuous — user feedback (thumbs up/down) drives retrieval improvement |
+| **+learningPeriod** | Continuous — user feedback (thumbs up/down) is collected for quality monitoring and retrieval analytics via `GET /feedback/analytics` |
 
 The Insight **generates** answers to the Question Goal and **influences** (++) the Decision Goal by providing accurate, cited specification content.
 
@@ -112,7 +112,7 @@ The Insight **generates** answers to the Question Goal and **influences** (++) t
 
 ## Indicators (Business KPIs)
 
-| Indicator | Current (■ Red) | Target (■ Green) | Evaluates |
+| Indicator | Current (▲ Red) | Target (■ Green) | Evaluates |
 |-----------|-----------------|-------------------|-----------|
 | **Query Resolution Time** | 15-30 min (manual PDF search) | < 10 sec (automated semantic search + LLM) | Business Goal: Query AUTOSAR Specifications |
 | **Engineer Satisfaction** | N/A | ≥ 80% thumbs-up rate | Question Goal: Answer quality |

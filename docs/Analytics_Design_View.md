@@ -182,7 +182,7 @@ This goal is **required for** satisfying the Business View's Question Goal: *"Wh
 | **Target** | ≥ 85% |
 | **Measurement** | Manual evaluation on 50 test queries |
 | **Evaluates** | Precision softgoal + Analytics Goal |
-| **Status** | ■ Green (target met) / ■ Red (below target) |
+| **Status** | ■ Green (target met) / ▲ Red (below target) |
 
 ---
 

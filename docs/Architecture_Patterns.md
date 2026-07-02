@@ -183,7 +183,7 @@ The system is decomposed into **independent, loosely-coupled services** that com
 
 ```python
 # main.py — API Gateway wires all microservice routers
-app.include_router(health_router)      # GET /health, GET /health/metrics
+app.include_router(health_router)      # GET /health, GET /health/status, GET /health/metrics
 app.include_router(ingestion_router)   # POST /ingest/upload, POST /ingest/local
 app.include_router(retrieval_router)   # POST /query, POST /query/search  
 app.include_router(feedback_router)    # POST /feedback, GET /feedback/analytics
