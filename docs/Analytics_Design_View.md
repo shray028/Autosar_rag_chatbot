@@ -17,8 +17,8 @@
 │                                         ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐       ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐                              │
 │                              ┌───┬───┐  │  (softgoal)  │       │  (softgoal)  │                              │
 │                              │ ■ │   │  └╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘       └╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘                              │
-│                              │ ■ │   │       ▲ evaluates              ▲ evaluates                            │
-│                              │ ■ │ ■ │       │                        │                                      │
+│                              │ ▲ │   │       ▲ evaluates              ▲ evaluates                            │
+│                              │ ▲ │ ■ │       │                        │                                      │
 │         Retrieval            └───┴───┘       │                        │                                      │
 │         Precision@5     ╔════════════════════╧════════════════════════╧═════════════════════╗                │
 │         (indicator)     ║                                                                   ║                │
@@ -67,7 +67,7 @@
 | ⬡ Hexagon | **Algorithm** | An ML algorithm or computational method that performs the analytics goal |
 | Double-bordered oval | **Analytics Goal** | The central ML task to be achieved |
 | ☁ Cloud shape | **Softgoal** | A quality attribute or non-functional requirement (not strictly measurable) |
-| Colored bar (■ green / ■ red) | **Indicator** | A measurable metric that evaluates a softgoal |
+| Colored bar (■ green / ▲ red) | **Indicator** | A measurable metric that evaluates a softgoal |
 | `Performs ──►` | **Performs** | Algorithm contributes to achieving the analytics goal |
 | `Evaluates ┬┬┬` | **Evaluates** | Indicator measures the satisfaction of a softgoal |
 | `Influence + / −` | **Influence** | Algorithm positively (+) or negatively (−) impacts a softgoal |

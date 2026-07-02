@@ -64,6 +64,14 @@ class TestHealthEndpoint:
         assert "uptime_seconds" in data
         assert data["uptime_seconds"] >= 0
 
+    def test_health_status_returns_cached_snapshot(self):
+        response = client.get("/health/status")
+        data = response.json()
+        assert response.status_code == 200
+        assert data["cached"] is True
+        assert "services" in data
+        assert "uptime_seconds" in data
+
 
 class TestMetricsEndpoint:
     """Test the /health/metrics endpoint."""

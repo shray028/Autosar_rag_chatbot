@@ -30,3 +30,4 @@ build/
 
 # Gemini / AI workspace
 .gemini/
+GR4ML_views/

@@ -17,8 +17,8 @@
 │      Query Resolution Time                         │  Query AUTOSAR   │◄── desires ── 🧑 Embedded Systems       │
 │      ┌───┬───┐                                     │  Specifications  │               │  Engineers              │
 │      │ ■ │   │                                     └──────╌╌╌╌╌╌──────┘                                         │
-│      │ ■ │   │                                            │                           🧑 AUTOSAR                │
-│      │ ■ │ ■ │                                           AND                          │  Integrators            │
+│      │ ▲ │   │                                            │                           🧑 AUTOSAR                │
+│      │ ▲ │ ■ │                                           AND                          │  Integrators            │
 │      └───┴───┘                                      ┌─────┴──────┐                                              │
 │                                                     │            │                    🧑 Technical              │
 │                                                     ▼            ▼                    │  Leads                  │
@@ -56,7 +56,7 @@
 | **D** + oval | **Decision Goal** | A decision that needs to be made using analytics |
 | **Q** + oval | **Question Goal** | A question that the ML system must answer |
 | Rectangle with attributes | **Insight** | ML model card describing the analytical model |
-| Colored bar (■ green / ■ red) | **Indicator** | KPI that measures goal satisfaction |
+| Colored bar (■ green / ▲ red) | **Indicator** | KPI that measures goal satisfaction |
 | `AND` / `OR` | **Decomposition** | How goals break down into sub-goals |
 | `desires →` | **Desires** | Actor wants to achieve a goal |
 | `generates` | **Generates** | Insight produces answers to questions |
