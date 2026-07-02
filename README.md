@@ -514,9 +514,15 @@ Ask a natural language question about ingested documents.
 ```json
 {
   "question": "What is the Com stack configuration for PDU routing?",
-  "top_k": 5
+  "top_k": 5,
+  "evaluate_hallucination": true
 }
 ```
+
+Set `evaluate_hallucination` to `true` to run an additional claim-level
+grounding check. This compares the generated answer against the retrieved
+source excerpts and reports the percentage of factual claims that are
+unsupported or contradicted by the provided context.
 
 **Response:**
 ```json
@@ -531,7 +537,25 @@ Ask a natural language question about ingested documents.
     }
   ],
   "confidence": 0.87,
-  "latency_ms": 1200
+  "hallucination_evaluation": {
+    "factual_claims": 4,
+    "supported_claims": 3,
+    "contradicted_claims": 0,
+    "unsupported_claims": 1,
+    "not_factual_claims": 0,
+    "hallucination_rate": 0.25,
+    "faithfulness": 0.75,
+    "verdict": "mostly_grounded",
+    "claims": [
+      {
+        "claim": "The Com stack routes I-PDUs through PduR.",
+        "status": "supported",
+        "source_indices": [1],
+        "rationale": "The cited source describes Com interaction with PduR."
+      }
+    ]
+  },
+  "latency_ms": 21735
 }
 ```
 
