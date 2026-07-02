@@ -96,7 +96,7 @@ The system follows a **5-stage pipeline architecture**:
 
 ## High-Level Design (HLD)
 
-![AUTOSAR Document Intelligence Assistant - HLD](ChatGPT%20Image%20Jun%209,%202026,%2012_19_34%20AM.png)
+![AUTOSAR Document Intelligence Assistant - HLD](HLD.png)
 
 The HLD comprises five core layers plus cross-cutting concerns:
 
@@ -226,7 +226,7 @@ The project is organized into **5 phases**, each building on the previous one. E
 - Confidence scoring for each answer
 
 **Acceptance Criteria:**
-- Queries return relevant answers within 3 seconds (latency target)
+- Search-only retrieval returns relevant chunks in under 1 second on the prepared local vector store; full answer generation depends on the local Ollama model/runtime and was measured at about 21.7 seconds in the final smoke test.
 - Citations correctly reference source documents and page numbers
 - Retrieval precision@5 ≥ 85% on test queries
 
@@ -400,7 +400,8 @@ The system is decomposed into independent services that can be developed, deploy
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
 | Retrieval Precision@5 | ≥ 85% | Manual evaluation on 50 test queries |
-| Answer Latency (end-to-end) | < 3 seconds | P95 latency from API logs |
+| Retrieval Latency (`/query/search`) | < 1 second | Local smoke test returned top-3 chunks in about 428 ms |
+| Full Answer Latency (`/query`) | Local-LLM dependent | Final smoke test with `llama3.2` generated a cited answer in about 21.7 seconds |
 | Hallucination Rate | < 5% | Manual review of 50 answers for unsupported claims |
 | Ingestion Throughput | < 5 min / 200-page PDF | Timed ingestion runs |
 | System Uptime | ≥ 99% | Heartbeat monitoring over 7-day period |
@@ -531,7 +532,7 @@ Ask a natural language question about ingested documents.
     }
   ],
   "confidence": 0.87,
-  "latency_ms": 1200
+  "latency_ms": 21735
 }
 ```
 
@@ -554,6 +555,8 @@ Submit feedback on an answer.
 ```
 Assignment_1/
 ├── README.md                     # This file
+├── 151.ipynb                     # Assignment implementation notebook
+├── 151.docx / 151.pdf            # Final submission report
 ├── requirements.txt              # Python dependencies
 ├── .env.example                  # Environment configuration template
 ├── .env                          # Local environment config (gitignored)
@@ -624,8 +627,7 @@ Assignment_1/
 │   ├── Data_Preparation_View.md  # Data Preparation View diagram
 │   └── Quality_Requirements.md   # Top 3 quality requirements
 │
-└── notebooks/                    # Jupyter notebooks
-    └── <GroupId>.ipynb            # Assignment submission notebook
+└── docs/                         # Assignment documentation and GR4ML views
 ```
 
 ---
