@@ -244,17 +244,3 @@ async def correlation_id_middleware(request, call_next):
     return response
 ```
 
----
-
-## Mapping to M3/M4 Module Topics
-
-| Module Topic | Implementation in This Project |
-|-------------|-------------------------------|
-| **M3: RAG Model for LLMs** | Core architecture — retrieval → augmentation → generation pipeline |
-| **M3: Microservices Pattern** | Three isolated services (Ingestion, Retrieval, LLM Inference) with independent routers |
-| **M3: Feature Store Pattern** | ChromaDB as the vector store — pre-computed embeddings cached for fast retrieval |
-| **M3: Heartbeat Tactic** | Background task checking service health every 30s with consecutive failure tracking |
-| **M4: API Design** | REST endpoints: POST /ingest, POST /query, GET /health, POST /feedback |
-| **M4: Logging & Debugging** | structlog with JSON output and per-request correlation IDs |
-| **M4: Version Control** | Prompt templates versioned in `prompts/` directory; embedding model version tracked per document |
-| **M4: Code Practices** | Type hints, docstrings, Pydantic validation, pytest test suite (46 tests) |
