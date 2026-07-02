@@ -70,18 +70,18 @@ The system follows a **5-stage pipeline architecture**:
 
 ```
 ┌─────────────────┐     ┌─────────────────────────┐     ┌──────────────────────┐
-│  1. INPUT       │     │  2. INGESTION &          │     │  UNIFIED KNOWLEDGE   │
-│  SOURCES        │────▶│     INDEXING PIPELINE    │────▶│  STORE               │
-│  (PDFs, Queries)│     │  (Parse→Chunk→Embed→     │     │  (Vector + Metadata  │
-│                 │     │   Enrich→Index)           │     │   + Doc Store)       │
+│  1. INPUT       │     │  2. INGESTION &         │     │  UNIFIED KNOWLEDGE   │
+│  SOURCES        │────▶│     INDEXING PIPELINE   │────▶│  STORE               │
+│  (PDFs, Queries)│     │  (Parse→Chunk→Embed→    │     │  (Vector + Metadata  │
+│                 │     │   Enrich→Index)         │     │   + Doc Store)       │
 └─────────────────┘     └─────────────────────────┘     └──────────┬───────────┘
-                                                                    │
-                                                                    ▼
+                                                                   │
+                                                                   ▼
 ┌─────────────────┐     ┌─────────────────────────┐     ┌──────────────────────┐
-│  4. RESPONSE &  │     │  3. RETRIEVAL &          │     │  Query Understanding │
-│     OUTPUT      │◀────│     REASONING ENGINE     │◀────│  → Semantic Search   │
-│  (Answer +      │     │  (Re-rank→Assemble→      │     │  → Re-ranking        │
-│   Citations)    │     │   Prompt→LLM Inference)  │     │                      │
+│  4. RESPONSE &  │     │  3. RETRIEVAL &         │     │  Query Understanding │
+│     OUTPUT      │◀────│     REASONING ENGINE    │◀────│  → Semantic Search   │
+│  (Answer +      │     │  (Re-rank→Assemble→     │     │  → Re-ranking        │
+│   Citations)    │     │   Prompt→LLM Inference) │     │                      │
 └────────┬────────┘     └─────────────────────────┘     └──────────────────────┘
          │
          ▼
@@ -96,7 +96,7 @@ The system follows a **5-stage pipeline architecture**:
 
 ## High-Level Design (HLD)
 
-![AUTOSAR Document Intelligence Assistant - HLD](ChatGPT%20Image%20Jun%209,%202026,%2012_19_34%20AM.png)
+![AUTOSAR Document Intelligence Assistant - HLD](HLD.png)
 
 The HLD comprises five core layers plus cross-cutting concerns:
 
