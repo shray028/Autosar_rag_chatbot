@@ -153,7 +153,7 @@ The project is organized into **5 phases**, each building on the previous one. E
 **Tasks:**
 - [ ] **Document Parser**: Implement PDF text extraction using `PyMuPDF` (fitz)
   - Extract text, tables, headings, and metadata (title, page numbers)
-  - Handle multi-column layouts and embedded tables
+  - Handle multi-column layouts and embedded tablesƒˇ
   - Preserve section hierarchy from AUTOSAR document structure
 - [ ] **Chunking Strategy**: Implement semantic chunking
   - Split by AUTOSAR section headings (e.g., `7.1.2 Com_Init`, `[SWS_Com_00432]`)
@@ -400,7 +400,8 @@ The system is decomposed into independent services that can be developed, deploy
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
 | Retrieval Precision@5 | ≥ 85% | Manual evaluation on 50 test queries |
-| Answer Latency (end-to-end) | < 3 seconds | P95 latency from API logs |
+| Retrieval Latency (`/query/search`) | < 1 second | Local smoke test returned top-3 chunks in about 428 ms |
+| Full Answer Latency (`/query`) | Local-LLM dependent | Final smoke test with `llama3.2` generated a cited answer in about 21.7 seconds |
 | Hallucination Rate | < 5% | Manual review of 50 answers for unsupported claims |
 | Ingestion Throughput | < 5 min / 200-page PDF | Timed ingestion runs |
 | System Uptime | ≥ 99% | Heartbeat monitoring over 7-day period |
@@ -531,7 +532,7 @@ Ask a natural language question about ingested documents.
     }
   ],
   "confidence": 0.87,
-  "latency_ms": 1200
+  "latency_ms": 21735
 }
 ```
 

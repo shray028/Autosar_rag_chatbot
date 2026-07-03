@@ -669,7 +669,7 @@
                 <button class="quick-action" data-q="What is the CAN Driver initialization process?">CAN Driver Init</button>
                 <button class="quick-action" data-q="Explain the NvM block configuration parameters">NvM Configuration</button>
                 <button class="quick-action" data-q="What is the Com stack configuration for PDU routing?">PDU Routing</button>
-                <button class="quick-action" data-q="Describe the AUTOSAR security architecture">Security Architecture</button>
+                <button class="quick-action" data-q="Ethernet frame format">Ethernet Frame Format</button>
             </div>
         </div>
 
@@ -898,7 +898,7 @@
                     body: JSON.stringify({
                         question: submittedText,
                         top_k: 5,
-                        skip_reranking: true,
+                        skip_reranking: false,
                     }),
                 });
 

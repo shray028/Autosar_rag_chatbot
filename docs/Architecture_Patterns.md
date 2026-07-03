@@ -50,7 +50,7 @@ Non-ML Components:
 
 ---
 
-### Pattern 1: Retrieval-Augmented Generation (RAG)
+### Pattern 1: Retrieval-Augmented Generation (CQRS + Piple and filter = RAG)
 
 #### What is RAG?
 

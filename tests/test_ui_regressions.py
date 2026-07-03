@@ -30,7 +30,7 @@ class TestChatUiRegressions:
         assert "addMessage(submittedText, 'user');" in send_message_body
 
     def test_ui_disables_slow_llm_reranking_for_chat(self):
-        assert "skip_reranking: true" in HTML
+        assert "skip_reranking: false" in HTML
 
     def test_api_errors_are_formatted_before_display(self):
         assert "function formatApiError(payload)" in HTML

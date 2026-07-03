@@ -15,7 +15,6 @@ Implements cross-cutting concerns:
 
 Group 151 — BITS Pilani WILP
     - Abhinav Mandloi (2025aa05473@wilp.bits-pilani.ac.in)
-    - Prajwal Rastogi (2025aa05564@wilp.bits-pilani.ac.in)
     - Pritish Joshi (2025aa05686@wilp.bits-pilani.ac.in)
     - Satwinder Singh (2025aa05553@wilp.bits-pilani.ac.in)
     - Shray Vijay (2025aa05533@wilp.bits-pilani.ac.in)

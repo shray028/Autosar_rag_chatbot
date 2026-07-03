@@ -48,6 +48,8 @@
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+![Data Preparation View](../Data_prepration_view.png)
+
 ### Legend for Data Preparation View
 
 | Symbol | Element | Description |
