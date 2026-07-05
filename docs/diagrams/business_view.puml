@@ -1,0 +1,63 @@
+@startuml business_view
+' ============================================================
+' GR4ML — Business View
+' AUTOSAR Document Intelligence Assistant · Group 151
+' Edit this file and re-render:
+'   java -jar plantuml.jar -tpng -tsvg business_view.puml
+' Notation (GR4ML): oval = goal (D = decision goal, Q = question
+' goal), rectangle card = Insight (ML model card), stick figure =
+' actor, small box = indicator. Dashed = desires / generates.
+' ============================================================
+title <b>GR4ML — Business View</b>\nAUTOSAR Document Intelligence Assistant · Group 151
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam titleFontSize 18
+skinparam ArrowColor #404040
+skinparam ArrowFontColor #404040
+skinparam ArrowFontStyle italic
+skinparam actorBorderColor black
+skinparam actorBackgroundColor white
+
+' ---------- Indicators (business KPIs) ----------
+rectangle "<color:#2E7D32>█</color><color:#F0B429>█</color><color:#C00000>▲</color>  **Query Resolution Time**\n15–30 min  →  < 10 s\n<i>(indicator)</i>" as IND1 #white;line:595959
+rectangle "<color:#2E7D32>█</color><color:#F0B429>█</color><color:#C00000>▲</color>  **Engineer Satisfaction**\n≥ 80% thumbs-up rate\n<i>(indicator)</i>" as IND2 #white;line:595959
+
+' ---------- Business goal ----------
+usecase "**Query AUTOSAR**\n**Specifications**\n<i>(business goal)</i>" as BG #DDEBF7;line:2E75B6
+
+' ---------- Decision goal (D) and Question goal (Q) ----------
+usecase "<b><size:16>D</size></b>  **Decision on correct**\n**technical implementation**\n<i>(decision goal)</i>" as DG #FCE4D6;line:C55A11
+usecase "<b><size:16>Q</size></b>  **What is the relevant**\n**specification content for the**\n**AUTOSAR query at hand?**\n<i>(question goal)</i>" as QG #E2EFDA;line:548235
+
+' ---------- Insight (ML model card) ----------
+rectangle "<i>«Insight — ML Model Card»</i>\n**AUTOSAR RAG System**\n====\n+type: RAG (Retrieval-Augmented Generation)\n+input: Natural language query (text)\n+output: Citation-backed answer + source refs\n+usageFrequency: Per query (on demand)\n+updateFrequency: On new document ingestion\n+learningPeriod: Continuous (user feedback)" as INS #FFF2CC;line:BF8F00
+
+' ---------- Actors (stakeholders) ----------
+actor "Embedded Systems\nEngineers" as ENG
+actor "AUTOSAR\nIntegrators" as INT
+actor "Technical\nLeads" as LEAD
+actor "QA / Testing\nTeams" as QA
+
+' ---------- Relationships ----------
+' actors desire the business goal
+ENG -left-> BG : desires
+INT -left-> BG : desires
+LEAD -left-> BG : desires
+QA -left-> BG : desires
+
+' indicators evaluate goals
+IND1 -right-> BG : evaluates
+IND2 -up-> QG : evaluates
+
+' AND-decomposition of the business goal
+BG -down-> DG : <<AND>>
+BG -down-> QG : <<AN>>
+
+' the Insight answers the question goal and influences the decision
+INS .up.> DG : influence ++
+INS .right.> QG : generates / answers
+
+@enduml

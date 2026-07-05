@@ -1,0 +1,64 @@
+@startuml data_preparation_view
+' ============================================================
+' GR4ML — Data Preparation View
+' AUTOSAR Document Intelligence Assistant · Group 151
+' Edit this file and re-render:
+'   java -jar plantuml.jar -tpng -tsvg data_preparation_view.puml
+' Notation (GR4ML): rectangle = operator (data-prep step),
+' card with attributes = entity (PK in bold), folded-corner
+' note = parameters, cylinder = data store.
+' Solid arrow = data flow, dotted = inputs/outputs.
+' ============================================================
+title <b>GR4ML — Data Preparation View</b>\nAUTOSAR Document Intelligence Assistant · Group 151
+
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam titleFontSize 18
+skinparam ArrowColor #404040
+skinparam ArrowFontColor #404040
+skinparam ArrowFontStyle italic
+skinparam noteBackgroundColor #FFFFE0
+skinparam noteBorderColor #A6A600
+
+' ---------- Raw data source ----------
+file "**AUTOSAR Specification PDFs**\n5 docs · ~1,050 pages\nSWS_CANDriver · TPS_SystemTemplate\nEXP_LayeredSWArch · EXP_Security\nSWS_EthernetDriver" as PDFS #F2F2F2;line:404040
+
+' ---------- Operators (data preparation pipeline) ----------
+rectangle "**PDF Parsing**\n<i>(operator)</i>\nPyMuPDF · headings · [SWS_*] IDs" as OP1 #DEEBF7;line:1F4E79
+rectangle "**Semantic Chunking**\n<i>(operator)</i>\nsection-aware · 2-level split" as OP2 #DEEBF7;line:1F4E79
+rectangle "**Embedding Generation**\n<i>(operator)</i>\nnomic-embed-text · 768-dim" as OP3 #DEEBF7;line:1F4E79
+rectangle "**Metadata Enrichment**\n<i>(operator)</i>\ncitation metadata" as OP4 #DEEBF7;line:1F4E79
+rectangle "**Indexing & Storage**\n<i>(operator)</i>\nbatch upsert · idempotent" as OP5 #DEEBF7;line:1F4E79
+
+' ---------- Parameters note ----------
+note as N1
+  CHUNK_SIZE = 512 tokens
+  CHUNK_OVERLAP = 50 tokens
+  WHERE token_count > 0
+end note
+N1 .. OP2
+
+' ---------- Entity (output schema) ----------
+rectangle "<i>«Entity»</i>\n**AUTOSAR Document Chunk**\n====\n**- chunk_id : string (PK)**\n- document_name : string\n- page_number / page_end : int\n- section_heading : string\n- chunk_text : string\n- chunk_index / total_chunks : int\n- requirement_ids : list[SWS_*]\n- token_count : int\n- embedding_vector : float[768]\n====\n<i>embedding_vector = computed feature</i>\n<i>for similarity search</i>" as ENT #FFF2CC;line:BF8F00
+
+' ---------- Data stores ----------
+database "**ChromaDB Vector Store**\nHNSW · cosine" as DB1 #E2EFDA;line:548235
+database "**Metadata Store**\ndocuments.json" as DB2 #E2EFDA;line:548235
+
+' ---------- Data flow (pipeline) ----------
+PDFS --> OP1 : raw pages
+OP1 --> OP2 : extract
+OP2 --> OP3 : split
+OP3 --> OP4 : vectorize
+OP4 --> OP5 : enrich
+OP5 --> DB1 : vectors + metadata
+OP5 --> DB2 : doc registry
+
+' entity inputs / outputs
+OP2 ..> ENT : outputs
+OP3 ..> ENT : adds embedding_vector
+
+@enduml
