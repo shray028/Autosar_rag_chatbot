@@ -1,0 +1,68 @@
+@startuml analytics_design_view
+' ============================================================
+' GR4ML — Analytics Design View
+' AUTOSAR Document Intelligence Assistant · Group 151
+' Edit this file and re-render:
+'   java -jar plantuml.jar -tpng -tsvg analytics_design_view.puml
+' Notation (GR4ML): double-line oval = analytics goal, hexagon =
+' algorithm, cloud = softgoal, small box = indicator.
+' Solid arrow = performs / evaluates, dotted = influence (+/−).
+' ✓ on a softgoal = satisfied.
+' ============================================================
+title <b>GR4ML — Analytics Design View</b>\nAUTOSAR Document Intelligence Assistant · Group 151
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam titleFontSize 18
+skinparam ArrowColor #404040
+skinparam ArrowFontColor #404040
+skinparam ArrowFontStyle italic
+skinparam usecaseBorderThickness 3
+
+' ---------- Indicator ----------
+rectangle "<color:#2E7D32>█</color><color:#F0B429>█</color><color:#C00000>▲</color>  **Retrieval Precision@5**\ntarget ≥ 85% · 50 test queries\n<i>(indicator)</i>" as IND #white;line:595959
+
+' ---------- Analytics goal (prediction goal) ----------
+usecase "**Semantic Retrieval & Answer**\n**Generation for [AUTOSAR Query]**\n<i>(analytics goal)</i>" as AG #DDEBF7;line:2E75B6
+
+' ---------- Algorithms (hexagons) ----------
+hexagon "**nomic-embed-text**\n(Embedding)\n<i>(algorithm)</i>" as A1 #D9E2F3;line:4472C4
+hexagon "**Cosine Similarity**\n**Search**\n<i>(algorithm)</i>" as A2 #D9E2F3;line:4472C4
+hexagon "**llama3.2**\n(LLM Generation)\n<i>(algorithm)</i>" as A3 #D9E2F3;line:4472C4
+hexagon "**LLM Re-ranking**\n(Relevance Scoring)\n<i>(algorithm)</i>" as A4 #D9E2F3;line:4472C4
+
+' ---------- Softgoals (clouds) — all satisfied ✓ ----------
+cloud "**Precision**  <color:#2E7D32>✓</color>\n≥ 85% P@5\n<i>(softgoal)</i>" as SGP #EDEDED;line:7F7F7F
+cloud "**Low Latency**  <color:#2E7D32>✓</color>\n< 3 s P95\n<i>(softgoal)</i>" as SGL #EDEDED;line:7F7F7F
+cloud "**Anti-hallucination**  <color:#2E7D32>✓</color>\n< 5% rate\n<i>(softgoal)</i>" as SGH #EDEDED;line:7F7F7F
+cloud "**Interpretability**  <color:#2E7D32>✓</color>\n[Source N] citations\n<i>(softgoal)</i>" as SGI #EDEDED;line:7F7F7F
+cloud "**Robustness**  <color:#2E7D32>✓</color>\nretry logic · circuit breaker\n<i>(softgoal)</i>" as SGR #EDEDED;line:7F7F7F
+
+' ---------- Relationships ----------
+IND -right-> AG : evaluates
+IND ..> SGP : evaluates
+
+' algorithms perform the analytics goal
+A1 -up-> AG : performs
+A2 -up-> AG : performs
+A3 -up-> AG : performs
+A4 -up-> AG : performs
+
+' softgoal evaluated on the analytics goal (non-ML tactics)
+AG .right.> SGR : evaluates
+
+' influence links (algorithm → softgoal)
+A1 .down.> SGP : influence ++
+A1 .down.> SGL : influence +
+A2 .down.> SGP : influence +
+A2 .down.> SGL : influence ++
+A3 .down.> SGL : influence −
+A3 .down.> SGH : influence ++
+A3 .down.> SGI : influence +
+A4 .down.> SGP : influence ++
+A4 .down.> SGL : influence −
+A4 .down.> SGH : influence +
+
+@enduml

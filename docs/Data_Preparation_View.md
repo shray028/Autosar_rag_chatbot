@@ -8,47 +8,17 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                                                  │
-│   ████████████████████████████████████                                                                           │
-│   █  Data Preparation View           █                                                                           │
-│   ████████████████████████████████████                                                                           │
-│                                                                                                                  │
-│                                                                                                                  │
-│  ┌──────────────────────────────────┐                                                  ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐   │
-│  │ AUTOSAR Document Chunk           │                                ...               │  CHUNK_SIZE = 512   │   │
-│  │ (Entity)                         │                                 │    ...         │  CHUNK_OVERLAP = 50 │   │
-│  │──────────────────────────────────│          ┌──────────┐   ┌───────┴──┐  │          │  WHERE token_count>0│   │
-│  │ - chunk_id  (PK)                 │ outputs  │  PDF     │   │ Semantic │  │          └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘   │
-│  │ - document_name                  │◄╌╌╌╌╌╌╌╌╌│ Parsing  │──►│ Chunking │──┤               (Note)               │
-│  │ - page_number                    │          │(Operator)│   │(Operator)│  │                                    │
-│  │ - page_end                       │          └────┬─────┘   └──────────┘  │                                    │
-│  │ - section_heading                │               │                       │                                    │
-│  │ - chunk_text                     │               ▲                       ▼                                    │
-│  │ - requirement_ids                │               │             ┌──────────────┐     ┌──────────────┐          │
-│  │ - token_count                    │               │             │  Embedding   │────►│  Metadata    │          │
-│  │ - embedding_vector (768-dim)     │           Data flow         │  Generation  │     │  Enrichment  │          │
-│  │   ...                            │         (solid arrows)      │  (Operator)  │     │  (Operator)  │          │
-│  │ - confidence_score               │                             └──────────────┘     └──────┬───────┘          │
-│  │                                  │                                                         │                  │
-│  │ Label: embedding_vector is the   │                                                         ▼                  │
-│  │ computed feature for similarity  │                                                ┌──────────────┐            │
-│  │ search                           │                                                │   Indexing   │            │
-│  └──────────────────────────────────┘                                                │   & Storage  │            │
-│                                                                                      │  (Operator)  │            │
-│                                                                                      └──────────────┘            │
-│                                                                                                                  │
 │  ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────┐  │
 │  │                                  Data Flow (Pipeline)                                                      │  │
 │  │                                                                                                            │  │
 │  │  📄 AUTOSAR PDFs ──► [PDF Parsing] ──► [Semantic Chunking] ──► [Embedding] ──► [Metadata] ──► [Indexing]   │  │
 │  │       (raw)           (extract)         (split)                (vectorize)     (enrich)      (ChromaDB)    │  │
 │  │                                                                                                            │  │
-│  └────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  │
-│                                                                                                                  │
+│  └────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  │                                                                                                                  │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-![Data Preparation View](../Data_prepration_view.png)
+![Data Preparation View](/docs/diagrams/data_prepration_view.png)
 
 ### Legend for Data Preparation View
 

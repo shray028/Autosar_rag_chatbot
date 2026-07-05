@@ -6,59 +6,7 @@
 
 ## Analytics Design View Diagram
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                                              │
-│   ████████████████████████████████                                                                           │
-│   █  Analytics Design View       █                                                                           │
-│   ████████████████████████████████                                                                           │
-│                                                                                                              │
-│                                           ☁ Precision ☁           ☁ Robustness ☁                             │
-│                                         ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐       ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐                              │
-│                              ┌───┬───┐  │  (softgoal)  │       │  (softgoal)  │                              │
-│                              │ ■ │   │  └╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘       └╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘                              │
-│                              │ ▲ │   │       ▲ evaluates              ▲ evaluates                            │
-│                              │ ▲ │ ■ │       │                        │                                      │
-│         Retrieval            └───┴───┘       │                        │                                      │
-│         Precision@5     ╔════════════════════╧════════════════════════╧═════════════════════╗                │
-│         (indicator)     ║                                                                   ║                │
-│              │          ║   Semantic Retrieval & Answer Generation                          ║                │
-│    evaluates │          ║   for [AUTOSAR Query]                                             ║                │
-│              │          ║                                                                   ║                │
-│              ▼          ║   (Analytics Goal)                                                ║                │
-│   is required for ───►  ╚═══════╤════════════╤═══════════════════╤══════════════════╤═══════╝                │
-│                                 │            │                   │                  │                        │
-│                              performs     performs           performs          performs                      │
-│                                 │            │                   │                  │                        │
-│                                 ▼            ▼                   ▼                  ▼                        │
-│                          ⬡───────────⬡  ⬡──────────⬡    ⬡───────────────⬡   ⬡───────────────⬡               │
-│                          │  nomic-   │  │ Cosine   │     │   llama3.2   │    │     LLM      │                │
-│                          │  embed-   │  │Similarity│     │   (LLM       │    │   Re-ranking │                │
-│                          │  text     │  │ Search   │     │  Generation) │    │  (Relevance  │                │
-│                          │(Embedding)│  │          │     │              │    │   Scoring)   │                │
-│                          ⬡───────────⬡  ⬡──────────⬡    ⬡───────────────⬡   ⬡───────────────⬡               │
-│                           (algorithm)   (algorithm)        (algorithm)        (algorithm)                    │
-│                                │              │                 │                  │                         │
-│                                │              │                 │                  │                         │
-│              ☁ Low Latency ☁   │    ☁ Anti-hallucination ☁      │       ☁ Interpretability ☁                 │
-│            ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐    │   ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐       │       ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐                │
-│            │  (softgoal)  │    │   │    (softgoal)      │       │       │   (softgoal)      │                │
-│            └╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘    │   └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘       │       └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘                │
-│                  ▲             │              ▲                 │                  ▲                         │
-│                  │ influence   │              │ influence       │                  │ influence               │
-│                  │    −        │              │    ++           │                  │    +                    │
-│                  └─────────── Re-ranking ─────┘                 │                  │                         │
-│                               influences                        └──────────────────┘                         │
-│                                                          Citation extraction                                 │
-│                                                          influences ++ interpretability                      │
-│                                                                                                              │
-│           ✓ Satisfied:                    ✗ Denied:                                                          │
-│           Precision                       N/A (all softgoals are addressed)                                  │
-│           Low Latency                                                                                        │
-│           Interpretability                                                                                   │
-│           Anti-hallucination                                                                                 │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
+![Analytics Design View](/docs/diagrams/analytics_design_view.png)
 
 ### Legend for Analytics Design View
 

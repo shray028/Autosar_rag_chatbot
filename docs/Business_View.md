@@ -6,48 +6,8 @@
 
 ## Business View Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                                                 │
-│   ████████████████████████                                                                                      │
-│   █  Business View      █                                                                                       │
-│   ████████████████████████                                                                                      │
-│                                                                                                                 │
-│                                                    ┌──────╌╌╌╌╌╌──────┐                                         │
-│      Query Resolution Time                         │  Query AUTOSAR   │◄── desires ── 🧑 Embedded Systems       │
-│      ┌───┬───┐                                     │  Specifications  │               │  Engineers              │
-│      │ ■ │   │                                     └──────╌╌╌╌╌╌──────┘                                         │
-│      │ ▲ │   │                                            │                           🧑 AUTOSAR                │
-│      │ ▲ │ ■ │                                           AND                          │  Integrators            │
-│      └───┴───┘                                      ┌─────┴──────┐                                              │
-│                                                     │            │                    🧑 Technical              │
-│                                                     ▼            ▼                    │  Leads                  │
-│  ┌─────────────────────────────┐        ╔════════════════╗   ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐                              │
-│  │ AUTOSAR RAG System          │        ║  D  Decision   ║   │                   │    🧑 QA / Testing           │
-│  │ (Insight — ML Model Card)   │        ║    on correct  ║   │   ...             │    │  Teams                  │
-│  │─────────────────────────────│        ║    technical   ║   │                   │                              │
-│  │ +type: RAG System           │        ║ implementation ║   └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘                              │
-│  │   (Retrieval-Augmented      │        ╚═══════╤════════╝                                                      │
-│  │    Generation)              │                │                                                               │
-│  │ +input: Natural language    │               AND                                                              │
-│  │   query (text)              │                │                                                               │
-│  │ +output: Citation-backed    │                ▼                                                               │
-│  │   answer with source refs   │    ╔═══════════════════════════════════════════╗                               │
-│  │ +usageFrequency: Per query  │    ║                                           ║                               │
-│  │ +updateFrequency: On new    │    ║  Q  What is the relevant specification    ║                               │
-│  │   document ingestion        │    ║     content for the AUTOSAR query at      ║                               │
-│  │ +learningPeriod: Continuous │    ║     hand?                                 ║                               │
-│  │   (user feedback driven)    │    ║                                           ║                               │
-│  └──────────┬──────────────────┘    ╚═══════════════════════════════════════════╝                               │
-│             │                                     ▲                                                             │
-│             │                                     │                                                             │
-│             └──── generates ──────────────────────┘                                                             │
-│                                        answers                                                                  │
-│                                                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-```
 
-![Business View](../Bussiness_view.png)
+![Business View](/docs/diagrams/bussiness_view.png)
 
 ### Legend for Business View
 
